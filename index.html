@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Bird Shooter</title>
+
+<style>
+
+body{
+margin:0;
+overflow:hidden;
+font-family:Arial;
+background:linear-gradient(#87ceeb,#e0f7ff);
+}
+
+.header{
+position:absolute;
+top:0;
+width:100%;
+background:#111;
+color:white;
+text-align:center;
+padding:10px;
+font-size:22px;
+z-index:10;
+}
+
+#coins{
+color:gold;
+}
+
+#game{
+position:absolute;
+top:60px;
+width:100%;
+height:85vh;
+}
+
+#bird{
+position:absolute;
+font-size:60px;
+left:-80px;
+}
+
+#gun{
+position:absolute;
+bottom:60px;
+left:50%;
+transform:translateX(-50%);
+font-size:70px;
+}
+
+.guns{
+position:absolute;
+bottom:0;
+width:100%;
+text-align:center;
+background:#000000aa;
+padding:6px;
+}
+
+.guns button{
+margin:4px;
+padding:6px 12px;
+font-size:16px;
+}
+
+.bullet{
+position:absolute;
+font-size:25px;
+animation:shoot 1s linear forwards;
+}
+
+@keyframes shoot{
+0%{ bottom:120px }
+100%{ bottom:95% }
+}
+
+.blast{
+position:absolute;
+font-size:50px;
+animation:boom 0.6s forwards;
+}
+
+@keyframes boom{
+0%{ transform:scale(0.5); opacity:1 }
+100%{ transform:scale(2); opacity:0 }
+}
+
+.coin{
+position:absolute;
+font-size:20px;
+animation:coinFly 1s forwards;
+}
+
+@keyframes coinFly{
+0%{ transform:translateY(0); opacity:1 }
+100%{ transform:translateY(-120px); opacity:0 }
+}
+
+/* popup */
+
+.popup{
+position:fixed;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+background:white;
+padding:30px;
+border-radius:10px;
+text-align:center;
+box-shadow:0 0 15px rgba(0,0,0,0.4);
+display:none;
+z-index:999;
+}
+
+.popup button{
+margin-top:15px;
+padding:10px 20px;
+font-size:16px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+Coins: <span id="coins">0</span>
+</div>
+
+<div id="game">
+
+<div id="bird">🐦</div>
+
+<div id="gun">🔫</div>
+
+</div>
+
+<div class="guns">
+Select Gun:
+<button onclick="selectGun(1)">Gun 1</button>
+<button onclick="selectGun(2)">Gun 2</button>
+<button onclick="selectGun(3)">Gun 3</button>
+</div>
+
+<div class="popup" id="popup">
+<h2>Great Playing!</h2>
+<p>You reached 50 Coins 🎉</p>
+<button onclick="closePopup()">Close</button>
+</div>
+
+<script>
+
+let coins=sessionStorage.getItem("coins") || 0
+coins=parseInt(coins)
+
+document.getElementById("coins").innerText=coins
+
+let gunType=1
+let canShoot=true
+
+let bird=document.getElementById("bird")
+let gun=document.getElementById("gun")
+let game=document.getElementById("game")
+
+function selectGun(n){
+gunType=n
+}
+
+/* spawn bird */
+
+function spawnBird(){
+
+canShoot=true
+
+let y=Math.random()*200+60
+let speed=Math.random()*5000+4000
+
+bird.style.top=y+"px"
+bird.style.left="-80px"
+
+bird.animate(
+[{left:"-80px"},{left:"110%"}],
+{duration:speed,iterations:1}
+)
+
+}
+
+spawnBird()
+
+setInterval(spawnBird,6000)
+
+/* touch move */
+
+game.addEventListener("touchmove",function(e){
+
+let touch=e.touches[0]
+
+gun.style.left=touch.clientX+"px"
+
+})
+
+game.addEventListener("mousemove",function(e){
+
+gun.style.left=e.clientX+"px"
+
+})
+
+/* shoot */
+
+game.addEventListener("click",function(){
+
+if(!canShoot) return
+
+canShoot=false
+
+if(gunType==1) singleShot()
+if(gunType==2) rapidFire()
+if(gunType==3) tripleShot()
+
+})
+
+function singleShot(){
+createBullet()
+}
+
+function rapidFire(){
+
+for(let i=0;i<5;i++){
+setTimeout(()=>createBullet(),i*100)
+}
+
+}
+
+function tripleShot(){
+
+for(let i=0;i<3;i++){
+setTimeout(()=>createBullet(),i*120)
+}
+
+}
+
+function createBullet(){
+
+let bullet=document.createElement("div")
+
+bullet.className="bullet"
+bullet.innerHTML="🔥"
+
+bullet.style.left=gun.offsetLeft+"px"
+
+game.appendChild(bullet)
+
+setTimeout(()=>{
+
+bullet.remove()
+
+checkHit()
+
+},800)
+
+}
+
+/* hit */
+
+function checkHit(){
+
+let birdRect=bird.getBoundingClientRect()
+let gunRect=gun.getBoundingClientRect()
+
+if(Math.abs(birdRect.left-gunRect.left)<80){
+
+blastBird()
+
+}
+
+}
+
+/* blast */
+
+function blastBird(){
+
+let rect=bird.getBoundingClientRect()
+
+let blast=document.createElement("div")
+
+blast.className="blast"
+blast.innerHTML="💥"
+
+blast.style.left=rect.left+"px"
+blast.style.top=rect.top+"px"
+
+document.body.appendChild(blast)
+
+setTimeout(()=>blast.remove(),600)
+
+/* coin animation */
+
+let coin=document.createElement("div")
+
+coin.className="coin"
+coin.innerHTML="🪙+10"
+
+coin.style.left=rect.left+"px"
+coin.style.top=rect.top+"px"
+
+document.body.appendChild(coin)
+
+setTimeout(()=>coin.remove(),1000)
+
+/* add coins */
+
+coins+=10
+
+sessionStorage.setItem("coins",coins)
+
+document.getElementById("coins").innerText=coins
+
+if(coins>=50){
+
+document.getElementById("popup").style.display="block"
+
+}
+
+spawnBird()
+
+}
+
+/* popup close */
+
+function closePopup(){
+
+document.getElementById("popup").style.display="none"
+
+/* adsterra direct link */
+
+window.open("https://www.effectivegatecpm.com/bupvhwz5?key=eaedd439f3f1d2db330f017cf0cb29ca","_blank")
+
+}
+
+</script>
+
+</body>
+</html>
