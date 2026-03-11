@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Bird Shooter</title>
+<title>Bird Shots</title>
 
 <style>
 
@@ -25,9 +25,7 @@ font-size:22px;
 z-index:10;
 }
 
-#coins{
-color:gold;
-}
+#coins{color:gold}
 
 #game{
 position:absolute;
@@ -36,56 +34,87 @@ width:100%;
 height:85vh;
 }
 
+/* bird */
+
 #bird{
 position:absolute;
-font-size:60px;
-left:-80px;
+left:-100px;
+width:80px;
 }
+
+/* gun */
 
 #gun{
 position:absolute;
 bottom:60px;
 left:50%;
 transform:translateX(-50%);
-font-size:70px;
+width:90px;
 }
 
-.guns{
-position:absolute;
-bottom:0;
-width:100%;
-text-align:center;
-background:#000000aa;
-padding:6px;
+/* gun button */
+
+.gunMenuBtn{
+position:fixed;
+bottom:20px;
+right:20px;
+width:60px;
+height:60px;
+border-radius:50%;
+background:#ff9800;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:28px;
+color:white;
+z-index:50;
 }
 
-.guns button{
-margin:4px;
-padding:6px 12px;
-font-size:16px;
+/* gun popup */
+
+.gunPopup{
+position:fixed;
+bottom:90px;
+right:20px;
+background:white;
+border-radius:10px;
+padding:10px;
+display:none;
+box-shadow:0 0 10px rgba(0,0,0,.4);
 }
+
+.gunPopup div{
+padding:6px 10px;
+cursor:pointer;
+}
+
+/* bullet */
 
 .bullet{
 position:absolute;
-font-size:25px;
+width:60px;
 animation:shoot 1s linear forwards;
 }
 
 @keyframes shoot{
-0%{ bottom:120px }
-100%{ bottom:95% }
+0%{bottom:120px}
+100%{bottom:95%}
 }
+
+/* blast */
 
 .blast{
 position:absolute;
-font-size:50px;
-animation:boom 0.6s forwards;
+font-size:60px;
+animation:boom .6s forwards;
 }
 
 @keyframes boom{
-0%{ transform:scale(0.5); opacity:1 }
-100%{ transform:scale(2); opacity:0 }
+0%{transform:scale(.5);opacity:1}
+100%{transform:scale(2);opacity:0}
 }
+
+/* coin */
 
 .coin{
 position:absolute;
@@ -94,8 +123,8 @@ animation:coinFly 1s forwards;
 }
 
 @keyframes coinFly{
-0%{ transform:translateY(0); opacity:1 }
-100%{ transform:translateY(-120px); opacity:0 }
+0%{transform:translateY(0);opacity:1}
+100%{transform:translateY(-120px);opacity:0}
 }
 
 /* popup */
@@ -107,9 +136,9 @@ left:50%;
 transform:translate(-50%,-50%);
 background:white;
 padding:30px;
-border-radius:10px;
+border-radius:15px;
 text-align:center;
-box-shadow:0 0 15px rgba(0,0,0,0.4);
+box-shadow:0 0 20px rgba(0,0,0,.4);
 display:none;
 z-index:999;
 }
@@ -117,7 +146,10 @@ z-index:999;
 .popup button{
 margin-top:15px;
 padding:10px 20px;
-font-size:16px;
+background:#ff9800;
+border:none;
+color:white;
+border-radius:6px;
 }
 
 </style>
@@ -131,46 +163,70 @@ Coins: <span id="coins">0</span>
 
 <div id="game">
 
-<div id="bird">🐦</div>
+<img id="bird" src="bird.gif">
 
-<div id="gun">🔫</div>
+<img id="gun" src="gun.gif">
 
 </div>
 
-<div class="guns">
-Select Gun:
-<button onclick="selectGun(1)">Gun 1</button>
-<button onclick="selectGun(2)">Gun 2</button>
-<button onclick="selectGun(3)">Gun 3</button>
+<div class="gunMenuBtn" onclick="toggleGunMenu()">🔫</div>
+
+<div class="gunPopup" id="gunPopup">
+<div onclick="selectGun(1)">Gun 1</div>
+<div onclick="selectGun(2)">Gun 2 🔥</div>
+<div onclick="selectGun(3)">Gun 3 ⚡</div>
 </div>
 
 <div class="popup" id="popup">
-<h2>Great Playing!</h2>
-<p>You reached 50 Coins 🎉</p>
+<h2>Great Playing 🎉</h2>
+<p>Reward stage reached</p>
 <button onclick="closePopup()">Close</button>
 </div>
 
+<!-- Sounds -->
+
+<audio id="gunSound" src="gun.mp3"></audio>
+<audio id="blastSound" src="blast.mp3"></audio>
+<audio id="popupSound" src="popup.mp3"></audio>
+
 <script>
 
-let coins=sessionStorage.getItem("coins") || 0
+let coins=sessionStorage.getItem("coins")||0
 coins=parseInt(coins)
+
+let nextPopup=sessionStorage.getItem("nextPopup")||50
+nextPopup=parseInt(nextPopup)
 
 document.getElementById("coins").innerText=coins
 
 let gunType=1
 let canShoot=true
+let gamePaused=false
 
 let bird=document.getElementById("bird")
 let gun=document.getElementById("gun")
 let game=document.getElementById("game")
 
+function toggleGunMenu(){
+
+let m=document.getElementById("gunPopup")
+
+m.style.display=m.style.display=="block"?"none":"block"
+
+}
+
 function selectGun(n){
+
 gunType=n
+document.getElementById("gunPopup").style.display="none"
+
 }
 
 /* spawn bird */
 
 function spawnBird(){
+
+if(gamePaused)return
 
 canShoot=true
 
@@ -178,10 +234,10 @@ let y=Math.random()*200+60
 let speed=Math.random()*5000+4000
 
 bird.style.top=y+"px"
-bird.style.left="-80px"
+bird.style.left="-100px"
 
 bird.animate(
-[{left:"-80px"},{left:"110%"}],
+[{left:"-100px"},{left:"110%"}],
 {duration:speed,iterations:1}
 )
 
@@ -191,73 +247,48 @@ spawnBird()
 
 setInterval(spawnBird,6000)
 
-/* touch move */
+/* move gun */
 
-game.addEventListener("touchmove",function(e){
-
-let touch=e.touches[0]
-
-gun.style.left=touch.clientX+"px"
-
+game.addEventListener("touchmove",e=>{
+if(gamePaused)return
+gun.style.left=e.touches[0].clientX+"px"
 })
 
-game.addEventListener("mousemove",function(e){
-
+game.addEventListener("mousemove",e=>{
+if(gamePaused)return
 gun.style.left=e.clientX+"px"
-
 })
 
 /* shoot */
 
-game.addEventListener("click",function(){
+game.addEventListener("click",()=>{
 
-if(!canShoot) return
+if(!canShoot||gamePaused)return
 
 canShoot=false
 
-if(gunType==1) singleShot()
-if(gunType==2) rapidFire()
-if(gunType==3) tripleShot()
+document.getElementById("gunSound").play()
+
+if(gunType==1) createBullet("fire.gif")
+if(gunType==2) createBullet("fire.gif")
+if(gunType==3) createBullet("lightning.png")
 
 })
 
-function singleShot(){
-createBullet()
-}
+function createBullet(img){
 
-function rapidFire(){
-
-for(let i=0;i<5;i++){
-setTimeout(()=>createBullet(),i*100)
-}
-
-}
-
-function tripleShot(){
-
-for(let i=0;i<3;i++){
-setTimeout(()=>createBullet(),i*120)
-}
-
-}
-
-function createBullet(){
-
-let bullet=document.createElement("div")
+let bullet=document.createElement("img")
 
 bullet.className="bullet"
-bullet.innerHTML="🔥"
+bullet.src=img
 
 bullet.style.left=gun.offsetLeft+"px"
 
 game.appendChild(bullet)
 
 setTimeout(()=>{
-
 bullet.remove()
-
 checkHit()
-
 },800)
 
 }
@@ -281,6 +312,8 @@ blastBird()
 
 function blastBird(){
 
+document.getElementById("blastSound").play()
+
 let rect=bird.getBoundingClientRect()
 
 let blast=document.createElement("div")
@@ -295,7 +328,7 @@ document.body.appendChild(blast)
 
 setTimeout(()=>blast.remove(),600)
 
-/* coin animation */
+/* coin */
 
 let coin=document.createElement("div")
 
@@ -309,17 +342,21 @@ document.body.appendChild(coin)
 
 setTimeout(()=>coin.remove(),1000)
 
-/* add coins */
-
 coins+=10
-
 sessionStorage.setItem("coins",coins)
 
 document.getElementById("coins").innerText=coins
 
-if(coins>=50){
+if(coins>=nextPopup){
+
+gamePaused=true
+
+document.getElementById("popupSound").play()
 
 document.getElementById("popup").style.display="block"
+
+nextPopup+=70
+sessionStorage.setItem("nextPopup",nextPopup)
 
 }
 
@@ -327,17 +364,19 @@ spawnBird()
 
 }
 
-/* popup close */
-
 function closePopup(){
 
 document.getElementById("popup").style.display="none"
 
-/* adsterra direct link */
-
-window.open("https://www.effectivegatecpm.com/bupvhwz5?key=eaedd439f3f1d2db330f017cf0cb29ca","_blank")
+window.open("https://your-adsterra-direct-link.com","_blank")
 
 }
+
+window.addEventListener("focus",()=>{
+
+gamePaused=false
+
+})
 
 </script>
 
