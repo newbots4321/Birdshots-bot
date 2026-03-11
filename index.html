@@ -7,7 +7,7 @@
 <meta name="viewport"
 content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-<title>Bird Shots</title>
+<title>Bird Shooter</title>
 
 <style>
 
@@ -57,10 +57,10 @@ width:80px;
 
 #gun{
 position:absolute;
-bottom:20px;
+bottom:15px;
 left:50%;
 transform:translateX(-50%);
-width:70px;
+width:60px;
 pointer-events:none;
 }
 
@@ -177,9 +177,7 @@ border-radius:6px;
 <body>
 
 <div class="header">
-
 Coins: <span id="coins">0</span>
-
 </div>
 
 <div id="game">
@@ -206,18 +204,14 @@ Coins: <span id="coins">0</span>
 
 <h2>Great Playing 🎉</h2>
 
-<p>Reward Stage</p>
+<p>Watch Ads Continue</p>
 
 <button onclick="closePopup()">Close</button>
 
 </div>
 
-<!-- sounds -->
-
 <audio id="gunSound" src="gun.mp3"></audio>
-
 <audio id="blastSound" src="blast.mp3"></audio>
-
 <audio id="popupSound" src="popup.mp3"></audio>
 
 <script>
@@ -268,11 +262,8 @@ bird.style.top=y+"px"
 bird.style.left="-120px"
 
 bird.animate(
-
 [{left:"-120px"},{left:"110%"}],
-
 {duration:speed,iterations:1}
-
 )
 
 }
@@ -281,22 +272,16 @@ spawnBird()
 
 setInterval(spawnBird,6000)
 
-/* move tank */
+/* move gun */
 
 game.addEventListener("touchmove",e=>{
-
 if(gamePaused)return
-
 gun.style.left=e.touches[0].clientX+"px"
-
 })
 
 game.addEventListener("mousemove",e=>{
-
 if(gamePaused)return
-
 gun.style.left=e.clientX+"px"
-
 })
 
 /* shoot */
@@ -320,7 +305,6 @@ function createBullet(img){
 let bullet=document.createElement("img")
 
 bullet.className="bullet"
-
 bullet.src=img
 
 bullet.style.left=gun.offsetLeft+"px"
@@ -328,11 +312,8 @@ bullet.style.left=gun.offsetLeft+"px"
 game.appendChild(bullet)
 
 setTimeout(()=>{
-
 bullet.remove()
-
 checkHit()
-
 },800)
 
 }
@@ -363,7 +344,6 @@ let rect=bird.getBoundingClientRect()
 let blast=document.createElement("img")
 
 blast.className="blast"
-
 blast.src="blast.gif"
 
 blast.style.left=rect.left+"px"
@@ -412,6 +392,8 @@ spawnBird()
 
 }
 
+/* popup */
+
 function closePopup(){
 
 document.getElementById("popup").style.display="none"
@@ -420,9 +402,17 @@ window.open("https://www.effectivegatecpm.com/bupvhwz5?key=eaedd439f3f1d2db330f0
 
 }
 
-window.addEventListener("focus",()=>{
+/* resume game after ads */
+
+document.addEventListener("visibilitychange",function(){
+
+if(!document.hidden){
 
 gamePaused=false
+
+spawnBird()
+
+}
 
 })
 
