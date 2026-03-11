@@ -17,7 +17,7 @@ padding:0;
 overflow:hidden;
 touch-action:none;
 font-family:Arial;
-background:linear-gradient(#87ceeb,#e0f7ff);
+background:skyblue;
 }
 
 /* header */
@@ -57,10 +57,10 @@ width:80px;
 
 #gun{
 position:absolute;
-bottom:15px;
+bottom:10px;
 left:50%;
 transform:translateX(-50%);
-width:60px;
+width:55px;
 pointer-events:none;
 }
 
@@ -109,7 +109,6 @@ animation:shoot .9s linear forwards;
 @keyframes shoot{
 
 0%{bottom:80px}
-
 100%{bottom:95%}
 
 }
@@ -125,7 +124,6 @@ animation:boom .6s forwards;
 @keyframes boom{
 
 0%{transform:scale(.6)}
-
 100%{transform:scale(1.6);opacity:0}
 
 }
@@ -141,7 +139,6 @@ animation:coinFly 1s forwards;
 @keyframes coinFly{
 
 0%{transform:translateY(0)}
-
 100%{transform:translateY(-120px);opacity:0}
 
 }
@@ -154,21 +151,56 @@ top:50%;
 left:50%;
 transform:translate(-50%,-50%);
 background:white;
-padding:30px;
-border-radius:15px;
+padding:35px;
+border-radius:20px;
 text-align:center;
-box-shadow:0 0 20px rgba(0,0,0,.4);
+box-shadow:0 0 25px rgba(0,0,0,.4);
 display:none;
 z-index:999;
+width:250px;
+}
+
+.popup h2{
+margin:0 0 10px;
 }
 
 .popup button{
 margin-top:15px;
-padding:10px 20px;
+padding:12px 25px;
 background:#ff9800;
 border:none;
 color:white;
-border-radius:6px;
+border-radius:10px;
+font-size:16px;
+}
+
+/* play popup */
+
+.playPopup{
+position:fixed;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+background:white;
+padding:35px;
+border-radius:20px;
+text-align:center;
+box-shadow:0 0 25px rgba(0,0,0,.4);
+display:none;
+z-index:999;
+width:260px;
+}
+
+.playPopup button{
+
+margin-top:15px;
+padding:14px 35px;
+font-size:18px;
+background:#28a745;
+border:none;
+color:white;
+border-radius:12px;
+
 }
 
 </style>
@@ -177,7 +209,9 @@ border-radius:6px;
 <body>
 
 <div class="header">
+
 Coins: <span id="coins">0</span>
+
 </div>
 
 <div id="game">
@@ -193,9 +227,7 @@ Coins: <span id="coins">0</span>
 <div class="gunPopup" id="gunPopup">
 
 <div onclick="selectGun(1)">🔥</div>
-
 <div onclick="selectGun(2)">⚡️</div>
-
 <div onclick="selectGun(3)">☠️</div>
 
 </div>
@@ -207,6 +239,14 @@ Coins: <span id="coins">0</span>
 <p>Watch Ads Continue</p>
 
 <button onclick="closePopup()">Close</button>
+
+</div>
+
+<div class="playPopup" id="playPopup">
+
+<h2>Continue Game</h2>
+
+<button onclick="startGame()">▶ PLAY</button>
 
 </div>
 
@@ -227,6 +267,7 @@ document.getElementById("coins").innerText=coins
 let gunType=1
 let canShoot=true
 let gamePaused=false
+let waitingPlay=false
 
 let bird=document.getElementById("bird")
 let gun=document.getElementById("gun")
@@ -272,7 +313,7 @@ spawnBird()
 
 setInterval(spawnBird,6000)
 
-/* move gun */
+/* gun move */
 
 game.addEventListener("touchmove",e=>{
 if(gamePaused)return
@@ -353,8 +394,6 @@ document.body.appendChild(blast)
 
 setTimeout(()=>blast.remove(),700)
 
-/* coin */
-
 let coin=document.createElement("div")
 
 coin.className="coin"
@@ -392,29 +431,41 @@ spawnBird()
 
 }
 
-/* popup */
+/* ad popup */
 
 function closePopup(){
 
 document.getElementById("popup").style.display="none"
 
+waitingPlay=true
+
 window.open("https://www.effectivegatecpm.com/bupvhwz5?key=eaedd439f3f1d2db330f017cf0cb29ca","_blank")
 
 }
 
-/* resume game after ads */
+/* detect back */
 
 document.addEventListener("visibilitychange",function(){
 
-if(!document.hidden){
+if(!document.hidden && waitingPlay){
+
+document.getElementById("playPopup").style.display="block"
+
+}
+
+})
+
+function startGame(){
+
+document.getElementById("playPopup").style.display="none"
+
+waitingPlay=false
 
 gamePaused=false
 
 spawnBird()
 
 }
-
-})
 
 </script>
 
